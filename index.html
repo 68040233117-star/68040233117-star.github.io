@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Potae — Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-1: #e6f7ff;
+      --bg-2: #f0fbff;
+      --accent: #7ec8ff; /* soft blue */
+      --accent-2: #9be7c4; /* mint green */
+      --glass: rgba(255,255,255,0.55);
+      --glass-2: rgba(255,255,255,0.14);
+      --text: #0f1724;
+      --muted: #567089;
+      --card-radius: 14px;
+      --shadow: 0 8px 24px rgba(15,23,36,0.08);
+    }
+
+    /* Reset & base */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: 'Prompt', 'Kanit', system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Helvetica Neue', Arial;
+      background: linear-gradient(135deg,var(--bg-1),var(--bg-2)); color:var(--text);
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      padding:36px;
+      display:flex; align-items:flex-start; justify-content:center;
+    }
+
+    /* Decorative blurred blobs */
+    .scene{position:fixed; inset:0; pointer-events:none; z-index:0}
+    .blob{
+      position:absolute; width:420px; height:420px; filter:blur(80px); opacity:0.85; transform:translate3d(0,0,0);
+      border-radius:50%; mix-blend-mode:soft-light;
+    }
+    .blob.b1{background:linear-gradient(45deg,var(--accent),#c8f0ff); left:-120px; top:-60px}
+    .blob.b2{background:linear-gradient(45deg,var(--accent-2),#dff9ef); right:-100px; bottom:-80px}
+
+    /* Main container */
+    .wrap{width:1100px; max-width:96%; display:flex; gap:28px; position:relative; z-index:1}
+
+    /* Sidebar */
+    .sidebar{
+      flex:0 0 28%; min-width:220px; background:linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.55));
+      border-radius:var(--card-radius); padding:24px; backdrop-filter:blur(8px) saturate(1.1); box-shadow:var(--shadow);
+      display:flex; flex-direction:column; gap:18px; align-items:center; text-align:center;
+    }
+    .avatar{width:128px; height:128px; border-radius:20px; overflow:hidden; box-shadow:0 6px 18px rgba(16,24,40,0.08); border:3px solid rgba(255,255,255,0.6)}
+    .avatar img{width:100%; height:100%; object-fit:cover; display:block}
+    .name{font-size:20px; font-weight:600}
+    .role{font-size:13px; color:var(--muted)}
+    .bio{font-size:14px; color:var(--text); opacity:0.9}
+
+    .contacts{display:flex; gap:12px; margin-top:6px}
+    .contact a{display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:10px; background:var(--glass-2); color:var(--text); text-decoration:none; box-shadow:0 6px 14px rgba(16,24,40,0.06)}
+    .contact svg{width:18px; height:18px}
+
+    /* Main content */
+    .main{flex:1; background:transparent; display:flex; flex-direction:column; gap:18px}
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.68), rgba(255,255,255,0.55)); padding:22px; border-radius:12px; box-shadow:var(--shadow); backdrop-filter:blur(6px)}
+
+    /* Resume card */
+    .resume{display:flex; flex-direction:column; gap:12px}
+    .greeting{display:flex; gap:12px; align-items:center}
+    .greeting h1{margin:0; font-size:20px}
+    .typing{color:var(--muted); font-weight:500}
+    .stack{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px}
+    .badge{background:rgba(10,20,30,0.04); padding:6px 10px; border-radius:999px; font-size:13px; color:var(--text); box-shadow:inset 0 -1px rgba(255,255,255,0.4)}
+
+    /* Projects */
+    .projects-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px}
+    .proj{display:flex; flex-direction:column; gap:10px; padding:14px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.6)); transition:transform .18s ease, box-shadow .18s ease}
+    .proj:hover{transform:translateY(-6px); box-shadow:0 16px 38px rgba(16,24,40,0.08)}
+    .proj .tags{display:flex; gap:8px; flex-wrap:wrap}
+    .tag{font-size:12px; padding:6px 8px; border-radius:8px; background:rgba(11,80,133,0.06); color:#0b547f}
+    .proj .actions{margin-top:auto; display:flex; gap:8px}
+    .btn{padding:8px 12px; background:linear-gradient(90deg,var(--accent),#66c2ff); color:white; border-radius:10px; border:0; cursor:pointer; font-weight:600}
+    .btn.ghost{background:transparent; color:var(--muted); box-shadow:none; border:1px solid rgba(10,20,30,0.04)}
+
+    /* Contribution graph */
+    .contrib{padding:14px}
+    .grid{display:grid; grid-template-columns:repeat(14,14px); gap:6px}
+    .cell{width:14px; height:14px; background:#ebf5ee; border-radius:3px; transition:transform .12s ease, filter .12s ease}
+    .cell.level-1{background:#dff6e0}
+    .cell.level-2{background:#a8e6a1}
+    .cell.level-3{background:#66d274}
+    .cell.level-4{background:#2fb84a}
+    .cell:hover{transform:scale(1.18); filter:brightness(1.06)}
+    .tooltip{position:fixed; pointer-events:none; background:rgba(10,20,30,0.94); color:white; padding:8px 10px; border-radius:8px; font-size:12px; z-index:99; transform:translate(-50%,-120%); white-space:nowrap}
+
+    /* Responsive */
+    @media (max-width:900px){
+      .wrap{flex-direction:column; gap:16px}
+      .sidebar{order:0; width:100%; flex:0 0 auto}
+      .main{order:1}
+      .projects-grid{grid-template-columns:1fr}
+      .grid{grid-template-columns:repeat(10,12px)}
+      .cell{width:12px;height:12px}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+  </div>
+
+  <div class="wrap">
+    <aside class="sidebar card">
+      <div class="avatar">
+        <img alt="Potae avatar" src="me.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder'" />
+      </div>
+      <div class="name">Potae</div>
+      <div class="role">Shimejodai king</div>
+      <div class="bio">ราชาหนอนชาเขียวที่มีอำนาจมหาศาล</div>
+
+      <div class="contacts">
+        <div class="contact"><a class="contact-link" href="#" aria-label="GitHub" title="GitHub"> 
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.73.5.5 5.74.5 12.02c0 5.1 3.29 9.43 7.86 10.96.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.75.41-1.27.75-1.56-2.56-.29-5.26-1.28-5.26-5.72 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .98-.31 3.21 1.18a11.1 11.1 0 0 1 2.92-.39c.99.01 1.99.13 2.92.39 2.23-1.5 3.21-1.18 3.21-1.18.63 1.59.24 2.76.12 3.05.74.81 1.19 1.84 1.19 3.1 0 4.45-2.71 5.43-5.29 5.71.42.36.8 1.06.8 2.14 0 1.55-.02 2.8-.02 3.18 0 .31.21.67.8.56C20.71 21.45 24 17.12 24 12.02 24 5.74 18.27.5 12 .5z"></path></svg>
+        </a></div>
+        <div class="contact"><a class="contact-link" href="mailto:potae@example.com" aria-label="Email" title="Email">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"></path></svg>
+        </a></div>
+        <div class="contact"><a class="contact-link" href="#" aria-label="LinkedIn" title="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.88 6 2.5 6S0 4.88 0 3.5 1.1 1 2.48 1 4.98 2.12 4.98 3.5zM.5 8h4V24h-4V8zM8.5 8h3.84v2.17h.05c.54-1.02 1.86-2.09 3.83-2.09 4.1 0 4.86 2.69 4.86 6.19V24h-4v-7.56c0-1.8-.03-4.12-2.5-4.12-2.5 0-2.88 1.95-2.88 3.99V24h-4V8z"/></svg>
+        </a></div>
+        <div class="contact"><a class="contact-link" href="#" aria-label="Location" title="Location">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 14.5 9 2.5 2.5 0 0 1 12 11.5z"/></svg>
+        </a></div>
+      </div>
+
+    </aside>
+
+    <main class="main">
+      <section class="card resume">
+        <div class="greeting">
+          <h1>สวัสดี! ผม/ดิฉันชื่อ Potae 👋</h1>
+        </div>
+        <div class="typing" id="typing"></div>
+        <div class="stack" aria-hidden>
+          <div class="badge">💻 JavaScript</div>
+          <div class="badge">🌐 HTML</div>
+          <div class="badge">🎨 CSS</div>
+          <div class="badge">⚡ Node.js</div>
+          <div class="badge">🔧 DevTools</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 style="margin:0 0 12px 0">Showcase Projects</h2>
+        <div class="projects-grid">
+          <article class="proj">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <strong>GreenWorm Dashboard</strong>
+              <span style="font-size:12px;color:var(--muted)">Pinned</span>
+            </div>
+            <p style="margin:0;color:var(--muted)">แดชบอร์ดสวยงามสำหรับแสดงสถิติการเติบโตของหนอนชาเขียว</p>
+            <div class="tags">
+              <span class="tag">HTML</span>
+              <span class="tag">CSS</span>
+              <span class="tag">JavaScript</span>
+            </div>
+            <div class="actions">
+              <button class="btn" onclick="window.open('#','_blank')">View</button>
+              <button class="btn ghost" onclick="alert('Open repo')">Repo</button>
+            </div>
+          </article>
+
+          <article class="proj">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <strong>Tea-Tracker</strong>
+              <span style="font-size:12px;color:var(--muted)">Web</span>
+            </div>
+            <p style="margin:0;color:var(--muted)">แอพจำนวนนาทีดื่มชา พร้อมบันทึกไทม์ไลน์</p>
+            <div class="tags">
+              <span class="tag">React</span>
+              <span class="tag">Node</span>
+            </div>
+            <div class="actions">
+              <button class="btn">View</button>
+              <button class="btn ghost">Repo</button>
+            </div>
+          </article>
+
+          <article class="proj">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <strong>Mini Games</strong>
+              <span style="font-size:12px;color:var(--muted)">Games</span>
+            </div>
+            <p style="margin:0;color:var(--muted)">ชุดมินิเกมสนุกๆ เขียนด้วย Vanilla JS</p>
+            <div class="tags">
+              <span class="tag">JavaScript</span>
+              <span class="tag">Canvas</span>
+            </div>
+            <div class="actions">
+              <button class="btn">Play</button>
+              <button class="btn ghost">Repo</button>
+            </div>
+          </article>
+
+          <article class="proj" style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:600">
+            + More coming soon
+          </article>
+        </div>
+      </section>
+
+      <section class="card contrib">
+        <h3 style="margin:0 0 12px 0">Contribution Graph</h3>
+        <div class="grid" id="contribGrid" aria-hidden></div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="tooltip" class="tooltip" style="display:none"></div>
+
+  <script>
+    // Typing effect
+    (function(){
+      const el = document.getElementById('typing');
+      const phrases = [
+        'ผมชอบเขียนโค้ดและเรียนรู้เทคโนโลยีใหม่ๆ…',
+        'สร้าง UI ที่สวยและใช้งานได้จริง',
+        'ชอบชาเขียว, เกม, และโปรเจกต์โอเพนซอร์ส'
+      ];
+      const speed = 40; const pause = 1600; let pi=0, ci=0;
+
+      function type(){
+        const current = phrases[pi];
+        el.textContent = current.slice(0, ci) + (ci % 2 ? '|' : '');
+        ci++;
+        if(ci <= current.length){ setTimeout(type, speed); }
+        else { setTimeout(()=>{ erase() }, pause); }
+      }
+      function erase(){
+        const current = phrases[pi];
+        ci--;
+        el.textContent = current.slice(0, ci) + (ci % 2 ? '|' : '');
+        if(ci>0) setTimeout(erase, speed/1.6);
+        else { pi = (pi+1) % phrases.length; setTimeout(type, 300); }
+      }
+      type();
+    })();
+
+    // Contribution grid mockup
+    (function(){
+      const grid = document.getElementById('contribGrid');
+      const tooltip = document.getElementById('tooltip');
+      const cols = 14; const rows = 6; // moderate size
+      const total = cols*rows;
+
+      for(let i=0;i<total;i++){
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        const level = Math.floor(Math.random()*5); // 0-4
+        if(level>0) cell.classList.add('level-'+level);
+
+        const commits = Math.floor(Math.random()*(level*5));
+        const d = new Date(); d.setDate(d.getDate()- (total-i));
+        cell.dataset.date = d.toISOString().slice(0,10);
+        cell.dataset.commits = commits;
+
+        cell.addEventListener('mouseenter', (e)=>{
+          tooltip.style.display='block';
+          tooltip.textContent = commits + ' contributions on ' + cell.dataset.date;
+        });
+        cell.addEventListener('mousemove', (e)=>{
+          tooltip.style.left = (e.clientX+8)+'px'; tooltip.style.top = (e.clientY-18)+'px';
+        });
+        cell.addEventListener('mouseleave', ()=>{ tooltip.style.display='none' });
+
+        grid.appendChild(cell);
+      }
+    })();
+  </script>
+</body>
+</html>
